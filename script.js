@@ -39,6 +39,49 @@ const account5 = {
 
 const accounts = [account1, account2, account3, account4, account5];
 
+const bankDeposit = accounts
+  .flatMap((el) => el.transactions)
+  .filter((el) => el > 0)
+  .reduce((acc, el) => acc + el);
+
+const bankWithdrawal = accounts
+  .flatMap((el) => el.transactions)
+  .filter((el) => el <= -300).length;
+
+const bankWithdrawal1 = accounts
+  .flatMap((el) => el.transactions)
+  .reduce((count, trans) => (trans <= -300 ? count + 1 : count), 0);
+
+const { deposits, withdrawals } = accounts
+  .flatMap((el) => el.transactions)
+  .reduce(
+    (acc, trans) => {
+      acc[trans > 0 ? "deposits" : "withdrawals"] += trans;
+      return acc;
+    },
+    { deposits: 0, withdrawals: 0 }
+  );
+
+/////
+
+// работа с массивами в javascript -> Работа с Массивами в JavaScript
+
+const text = "работа с массивами в javascript";
+const text1 = "работа с массивами в javascript ПРОСТЫМ языком для новичков";
+
+const toTitle = function (text) {
+  const exeptions = ["с", "в", "для", "и"];
+
+  const titleCase = text
+    .toLowerCase()
+    .split(" ")
+    .map((word) =>
+      exeptions.includes(word) ? word : word[0].toUpperCase() + word.slice(1)
+    ).join(' ');
+
+};
+toTitle(text);
+
 // Elements
 const labelWelcome = document.querySelector(".welcome");
 const labelDate = document.querySelector(".date");
@@ -69,9 +112,13 @@ const inputClosePin = document.querySelector(".form__input--pin");
 //
 //
 //
-const displayTransactions = function (transactions) {
+const displayTransactions = function (transactions, sort = false) {
   containerTransactions.innerHTML = " ";
-  transactions.forEach((trans, index) => {
+  const transac = sort
+    ? transactions.slice().sort((x, y) => x - y)
+    : transactions;
+
+  transac.forEach((trans, index) => {
     const transType = trans > 0 ? "deposit" : "withdrawal";
 
     const transactionsRow = `<div class="transactions__row">
@@ -191,15 +238,30 @@ btnClose.addEventListener("click", function (event) {
     );
     accounts.splice(currentAccountIndex, 1);
     containerApp.style.opacity = 0;
-    
-
   }
-  labelWelcome.textContent = 'Войдите в свой аккаунт';
-  inputCloseUsername.value = '';
-  inputClosePin.value = '';
+  labelWelcome.textContent = "Войдите в свой аккаунт";
+  inputCloseUsername.value = "";
+  inputClosePin.value = "";
 });
 
-const  transactions = [900, -200, 280, 300, -200, 150, 1400, -400];
+btnLoan.addEventListener("click", function (event) {
+  event.preventDefault();
+  const loanAmount = Number(inputLoanAmount.value);
+  if (
+    loanAmount > 0 &&
+    currentAccount.transactions.some(
+      (trans) => trans >= (loanAmount * 10) / 100
+    )
+  ) {
+    currentAccount.transactions.push(loanAmount);
+    updateUi(currentAccount);
+  }
+  inputLoanAmount.value = "";
+});
 
-const hasWithdrawals = transactions.every(trans => Math.abs(trans) > 200);
-console.log(hasWithdrawals);
+let transactionsSorted = false;
+btnSort.addEventListener("click", function (event) {
+  event.preventDefault();
+  displayTransactions(currentAccount.transactions, !transactionsSorted);
+  transactionsSorted = !transactionsSorted;
+});
